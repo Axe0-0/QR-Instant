@@ -1,41 +1,79 @@
-import { Link2, FileText, FileUp, Image, List } from "lucide-react";
-import { Button } from "@/components/ui/button";
+// client/src/components/QRTypeTabs.tsx
 
-export type QRType = "url" | "text" | "pdf" | "image" | "links";
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-interface QRTypeTabsProps {
-  activeType: QRType;
-  onTypeChange: (type: QRType) => void;
-}
+// Existing forms (keep these imports as you already had them)
+import UrlForm from "@/components/qr/UrlForm";
+import TextForm from "@/components/qr/TextForm";
+import PdfForm from "@/components/qr/PdfForm";
+import ImageForm from "@/components/qr/ImageForm";
+import LinkListForm from "@/components/qr/LinkListForm";
 
-const tabs = [
-  { type: "url" as QRType, label: "URL", icon: Link2 },
-  { type: "text" as QRType, label: "Text", icon: FileText },
-  { type: "pdf" as QRType, label: "PDF", icon: FileUp },
-  { type: "image" as QRType, label: "Image", icon: Image },
-  { type: "links" as QRType, label: "Link List", icon: List },
-];
+// New forms
+import WifiForm from "@/components/qr/WifiForm";
+import VCardForm from "@/components/qr/VCardForm";
 
-export default function QRTypeTabs({ activeType, onTypeChange }: QRTypeTabsProps) {
+// QR display
+import QRCodeDisplay from "@/components/QRCodeDisplay";
+
+export default function QRTypeTabs() {
+  const [content, setContent] = useState("");
+
   return (
-    <div className="flex gap-2 overflow-x-auto pb-2" data-testid="container-tabs">
-      {tabs.map((tab) => {
-        const Icon = tab.icon;
-        const isActive = activeType === tab.type;
-        return (
-          <Button
-            key={tab.type}
-            variant={isActive ? "default" : "secondary"}
-            size="sm"
-            onClick={() => onTypeChange(tab.type)}
-            className="flex items-center gap-2 whitespace-nowrap"
-            data-testid={`button-tab-${tab.type}`}
-          >
-            <Icon className="w-4 h-4" />
-            <span>{tab.label}</span>
-          </Button>
-        );
-      })}
-    </div>
+    <Tabs defaultValue="url" className="space-y-6">
+      <TabsList className="flex flex-wrap">
+        <TabsTrigger value="url">URL</TabsTrigger>
+        <TabsTrigger value="text">Text</TabsTrigger>
+        <TabsTrigger value="wifi">Wi-Fi</TabsTrigger>
+        <TabsTrigger value="vcard">vCard</TabsTrigger>
+        <TabsTrigger value="pdf">PDF</TabsTrigger>
+        <TabsTrigger value="image">Image</TabsTrigger>
+        <TabsTrigger value="links">Link List</TabsTrigger>
+      </TabsList>
+
+      {/* URL */}
+      <TabsContent value="url">
+        <UrlForm onChange={setContent} />
+        <div className="mt-4"><QRCodeDisplay content={content} /></div>
+      </TabsContent>
+
+      {/* TEXT */}
+      <TabsContent value="text">
+        <TextForm onChange={setContent} />
+        <div className="mt-4"><QRCodeDisplay content={content} /></div>
+      </TabsContent>
+
+      {/* WIFI (NEW) */}
+      <TabsContent value="wifi">
+        <WifiForm onChange={setContent} />
+        <div className="mt-4"><QRCodeDisplay content={content} /></div>
+      </TabsContent>
+
+      {/* VCARD (NEW) */}
+      <TabsContent value="vcard">
+        <VCardForm onChange={setContent} />
+        <div className="mt-4"><QRCodeDisplay content={content} /></div>
+      </TabsContent>
+
+      {/* PDF Upload */}
+      <TabsContent value="pdf">
+        <PdfForm onChange={setContent} />
+        <div className="mt-4"><QRCodeDisplay content={content} /></div>
+      </TabsContent>
+
+      {/* IMAGE Upload */}
+      <TabsContent value="image">
+        <ImageForm onChange={setContent} />
+        <div className="mt-4"><QRCodeDisplay content={content} /></div>
+      </TabsContent>
+
+      {/* LINK LIST */}
+      <TabsContent value="links">
+        <LinkListForm onChange={setContent} />
+        <div className="mt-4"><QRCodeDisplay content={content} /></div>
+      </TabsContent>
+    </Tabs>
   );
 }
+
