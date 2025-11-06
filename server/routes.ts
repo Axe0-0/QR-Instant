@@ -13,37 +13,25 @@ const upload = multer({
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/upload/pdf", upload.single("file"), async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ error: "No file uploaded" });
-      }
+  try {
+    if (!req.file) return res.status(400).json({ error: "No file provided" });
+    if (req.file.mimetype !== "application/pdf")
+      return res.status(400).json({ error: "Only PDF files are allowed" });
 
-      if (req.file.mimetype !== "application/pdf") {
-        return res.status(400).json({ error: "Invalid file type. Only PDF files are allowed" });
-      }
+    const result = await pdfParse(req.file.buffer);
+    // Be reasonable about QR size: don’t push huge text into a QR.
+    const MAX_QR_TEXT = 1800;
+    const content = result.text.trim().slice(0, MAX_QR_TEXT);
 
-      const parser = new PDFParse({ data: req.file.buffer });
-      const result = await parser.getText();
-      await parser.destroy();
-      
-      const text = result.text.trim();
-
-      if (!text) {
-        return res.status(400).json({ error: "PDF contains no extractable text" });
-      }
-
-      const maxLength = 2000;
-      const content = text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
-
-      res.json({
-        content,
-        fileName: req.file.originalname,
-      });
-    } catch (error) {
-      console.error("PDF processing error:", error);
-      res.status(500).json({ error: "Failed to process PDF file" });
-    }
-  });
+    return res.json({
+      content,
+      fileName: req.file.originalname,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Failed to parse PDF" });
+  }
+});
 
   app.post("/api/upload/image", upload.single("file"), async (req, res) => {
     try {
