@@ -34,29 +34,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 });
 
   app.post("/api/upload/image", upload.single("file"), async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ error: "No file uploaded" });
-      }
+  try {
+    if (!req.file) return res.status(400).json({ error: "No file provided" });
 
-      const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
-      if (!allowedTypes.includes(req.file.mimetype)) {
-        return res.status(400).json({ error: "Invalid file type. Only image files are allowed" });
-      }
-
-      const metadata = await sharp(req.file.buffer).metadata();
-      
-      const content = `Image: ${req.file.originalname}\nDimensions: ${metadata.width}x${metadata.height}\nFormat: ${metadata.format}`;
-
-      res.json({
-        content,
-        fileName: req.file.originalname,
-      });
-    } catch (error) {
-      console.error("Image processing error:", error);
-      res.status(500).json({ error: "Failed to process image file" });
+    const allowed = ["image/png", "image/jpeg", "image/webp", "image/gif"];
+    if (!allowed.includes(req.file.mimetype)) {
+      return res.status(400).json({ error: "Only PNG, JPEG, WEBP, or GIF allowed" });
     }
-  });
+
+    // We are NOT embedding the image in the QR (too big). Provide a short descriptor instead.
+    // If you plan to host the image and encode a URL later, that can be added.
+    const content = `Image: ${req.file.originalname}`;
+
+    return res.json({
+      content,
+      fileName: req.file.originalname,
+    });
+  } catch (error) {
+    console.error("Image processing error:", error);
+    res.status(500).json({ error: "Failed to process image file" });
+  }
+});
 
   const httpServer = createServer(app);
 
