@@ -4,6 +4,7 @@ import { Upload, FileText, X, Loader2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { fileUploadResponseSchema } from "@shared/schema";
+import { buildApiUrl } from "@/lib/api";
 
 interface FileUploadInputProps {
   fileType: "pdf" | "image";
@@ -28,20 +29,27 @@ export default function FileUploadInput({ fileType, onFileSelect, onClear, selec
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch(`/api/upload/${fileType}`, {
+      const response = await fetch(buildApiUrl(`/api/upload/${fileType}`), {
         method: "POST",
         body: formData,
       });
 
+      const contentType = response.headers.get("content-type") ?? "";
       const responseBody = await response.text();
       let parsedBody: unknown;
 
-      if (responseBody) {
-        try {
-          parsedBody = JSON.parse(responseBody);
-        } catch (parseError) {
-          parsedBody = undefined;
+      if (contentType.toLowerCase().includes("application/json")) {
+        if (responseBody) {
+          try {
+            parsedBody = JSON.parse(responseBody);
+          } catch (parseError) {
+            throw new Error("Received malformed JSON from the server");
+          }
         }
+      } else {
+        throw new Error(
+          "Unexpected response from server. Please ensure the backend API is reachable.",
+        );
       }
 
       if (!response.ok) {
