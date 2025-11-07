@@ -12,6 +12,7 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { linkListResponseSchema } from "@shared/schema";
 import type { LinkListTheme } from "@shared/schema";
+import { buildApiUrl } from "@/lib/api";
 
 export default function Home() {
   const [activeType, setActiveType] = useState<QRType>("url");
@@ -74,7 +75,7 @@ export default function Home() {
     let cancelled = false;
     const timeout = window.setTimeout(async () => {
       try {
-        const response = await fetch("/api/link-lists", {
+        const response = await fetch(buildApiUrl("/api/link-lists"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -86,15 +87,22 @@ export default function Home() {
           }),
         });
 
+        const contentType = response.headers.get("content-type") ?? "";
         const responseBody = await response.text();
         let parsedBody: unknown;
 
-        if (responseBody) {
-          try {
-            parsedBody = JSON.parse(responseBody);
-          } catch (parseError) {
-            parsedBody = undefined;
+        if (contentType.toLowerCase().includes("application/json")) {
+          if (responseBody) {
+            try {
+              parsedBody = JSON.parse(responseBody);
+            } catch (parseError) {
+              throw new Error("Received malformed JSON from the server");
+            }
           }
+        } else {
+          throw new Error(
+            "Unexpected response from server. Please ensure the backend API is reachable.",
+          );
         }
 
         if (!response.ok) {
