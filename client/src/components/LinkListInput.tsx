@@ -168,7 +168,7 @@ export default function LinkListInput({ links, onChange, theme, onThemeChange, s
                   key={value}
                   type="button"
                   variant={theme === value ? "default" : "outline"}
-                  className="flex flex-col items-start gap-1 h-full"
+                  className="flex flex-col items-start gap-1 h-full text-left whitespace-normal"
                   onClick={() => onThemeChange(value as LinkListTheme)}
                 >
                   <span className="font-medium">{option.label}</span>
