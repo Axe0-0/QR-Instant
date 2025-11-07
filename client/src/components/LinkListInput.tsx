@@ -1,7 +1,9 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Copy } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import type { LinkListTheme } from "@shared/schema";
 
 export interface LinkItem {
   id: string;
@@ -12,9 +14,40 @@ export interface LinkItem {
 interface LinkListInputProps {
   links: LinkItem[];
   onChange: (links: LinkItem[]) => void;
+  theme: LinkListTheme;
+  onThemeChange: (theme: LinkListTheme) => void;
+  shareUrl?: string;
 }
 
-export default function LinkListInput({ links, onChange }: LinkListInputProps) {
+const themeOptions: Record<LinkListTheme, { label: string; description: string; itemClass: string; containerClass: string }> = {
+  minimal: {
+    label: "Minimal",
+    description: "Clean typography on a subtle background",
+    containerClass: "space-y-3",
+    itemClass: "block rounded-md border border-border bg-background px-4 py-3 text-left hover:border-primary transition-colors",
+  },
+  cards: {
+    label: "Card stack",
+    description: "Elevated cards with accent borders",
+    containerClass: "space-y-3",
+    itemClass: "block rounded-xl border border-primary/40 bg-primary/5 px-4 py-3 text-left shadow-sm hover:bg-primary/10 transition-colors",
+  },
+  spotlight: {
+    label: "Spotlight",
+    description: "Bold buttons that demand attention",
+    containerClass: "space-y-3",
+    itemClass: "block rounded-full bg-primary text-primary-foreground px-5 py-3 text-center font-medium shadow hover:shadow-md transition-shadow",
+  },
+};
+
+const previewItems = [
+  { label: "Website", url: "https://example.com" },
+  { label: "Portfolio", url: "https://me.link" },
+];
+
+export default function LinkListInput({ links, onChange, theme, onThemeChange, shareUrl }: LinkListInputProps) {
+  const { toast } = useToast();
+
   const addLink = () => {
     const newLink: LinkItem = {
       id: Date.now().toString(),
@@ -34,6 +67,24 @@ export default function LinkListInput({ links, onChange }: LinkListInputProps) {
         link.id === id ? { ...link, [field]: value } : link
       )
     );
+  };
+
+  const handleCopyShareUrl = async () => {
+    if (!shareUrl) return;
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast({
+        title: "Link copied",
+        description: "Shareable page URL copied to clipboard",
+      });
+    } catch (error) {
+      toast({
+        title: "Copy failed",
+        description: "Unable to copy link. Please copy it manually.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -106,11 +157,62 @@ export default function LinkListInput({ links, onChange }: LinkListInputProps) {
           ))}
         </div>
       )}
-      
+
       {links.length > 0 && (
-        <p className="text-xs text-muted-foreground" data-testid="text-helper">
-          QR code will encode all links in a list format
-        </p>
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Design style</Label>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {Object.entries(themeOptions).map(([value, option]) => (
+                <Button
+                  key={value}
+                  type="button"
+                  variant={theme === value ? "default" : "outline"}
+                  className="flex flex-col items-start gap-1 h-full"
+                  onClick={() => onThemeChange(value as LinkListTheme)}
+                >
+                  <span className="font-medium">{option.label}</span>
+                  <span className="text-xs text-muted-foreground text-left">
+                    {option.description}
+                  </span>
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Preview</Label>
+            <div className={`rounded-lg border border-dashed p-4 ${themeOptions[theme].containerClass}`}>
+              {previewItems.map((item, index) => (
+                <span
+                  key={index}
+                  className={`${themeOptions[theme].itemClass}`}
+                >
+                  <span className="block text-sm font-medium">{item.label}</span>
+                  <span className="block text-xs text-muted-foreground">{item.url}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {shareUrl && (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Shareable page</Label>
+              <div className="flex items-center gap-2 rounded-md border px-3 py-2 bg-muted/50">
+                <span className="text-sm truncate" title={shareUrl} data-testid="text-share-url">
+                  {shareUrl}
+                </span>
+                <Button variant="secondary" size="icon" onClick={handleCopyShareUrl}>
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <p className="text-xs text-muted-foreground" data-testid="text-helper">
+            We host the link list for you and encode the shareable page in the QR code.
+          </p>
+        </div>
       )}
     </div>
   );

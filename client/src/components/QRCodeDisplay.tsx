@@ -17,6 +17,7 @@ interface QRCodeDisplayProps {
 }
 
 export default function QRCodeDisplay({ content }: QRCodeDisplayProps) {
+  const PREVIEW_SIZE: QRSize = "256";
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [size, setSize] = useState<QRSize>("512");
   const [ecc, setEcc] = useState<QRECL>("M");
@@ -30,7 +31,7 @@ export default function QRCodeDisplay({ content }: QRCodeDisplayProps) {
     if (!content || !canvasRef.current) return;
 
     QRCode.toCanvas(canvasRef.current, content, {
-      width: Number(size),
+      width: Number(PREVIEW_SIZE),
       margin: 2,
       errorCorrectionLevel: ecc,
       color: { dark, light },
@@ -38,7 +39,7 @@ export default function QRCodeDisplay({ content }: QRCodeDisplayProps) {
       console.error(err);
       toast({ title: "QR render failed", description: String(err), variant: "destructive" });
     });
-  }, [content, size, ecc, dark, light, toast]);
+  }, [content, ecc, dark, light, toast]);
 
   const handleDownloadPng = async () => {
     if (!content) return;
@@ -90,7 +91,7 @@ export default function QRCodeDisplay({ content }: QRCodeDisplayProps) {
     <Card className="p-4">
       <div className="grid md:grid-cols-2 gap-6">
         <div className="flex items-center justify-center">
-          <canvas ref={canvasRef} width={Number(size)} height={Number(size)} />
+          <canvas ref={canvasRef} width={Number(PREVIEW_SIZE)} height={Number(PREVIEW_SIZE)} />
         </div>
 
         <div className="space-y-4">

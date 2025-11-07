@@ -38,7 +38,7 @@ export default function FileUploadInput({ fileType, onFileSelect, onClear, selec
       }
 
       const data = await response.json();
-      onFileSelect(data.content, data.fileName);
+      onFileSelect(data.url, data.fileName);
     } catch (error) {
       toast({
         title: "Upload failed",
