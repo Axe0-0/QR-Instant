@@ -32,20 +32,20 @@ export class MemStorage implements IStorage {
 
   private cleanupFiles() {
     const now = Date.now();
-    for (const [id, file] of this.files) {
+    this.files.forEach((file, id) => {
       if (now - file.createdAt > FILE_TTL_MS) {
         this.files.delete(id);
       }
-    }
+    });
   }
 
   private cleanupLinkLists() {
     const now = Date.now();
-    for (const [id, list] of this.linkLists) {
+    this.linkLists.forEach((list, id) => {
       if (now - list.createdAt > LINK_LIST_TTL_MS) {
         this.linkLists.delete(id);
       }
-    }
+    });
   }
 
   saveFile(data: Omit<StoredFile, "id" | "createdAt">): StoredFile {

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Upload, FileText, X, Loader2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { fileUploadResponseSchema } from "@shared/schema";
 
 interface FileUploadInputProps {
   fileType: "pdf" | "image";
@@ -22,7 +23,7 @@ export default function FileUploadInput({ fileType, onFileSelect, onClear, selec
 
   const handleFile = async (file: File) => {
     setUploading(true);
-    
+
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -32,13 +33,34 @@ export default function FileUploadInput({ fileType, onFileSelect, onClear, selec
         body: formData,
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Upload failed");
+      const responseBody = await response.text();
+      let parsedBody: unknown;
+
+      if (responseBody) {
+        try {
+          parsedBody = JSON.parse(responseBody);
+        } catch (parseError) {
+          parsedBody = undefined;
+        }
       }
 
-      const data = await response.json();
-      onFileSelect(data.url, data.fileName);
+      if (!response.ok) {
+        const errorMessage =
+          typeof parsedBody === "object" && parsedBody !== null && "error" in parsedBody &&
+          typeof (parsedBody as { error?: unknown }).error === "string"
+            ? (parsedBody as { error: string }).error
+            : responseBody || "Upload failed";
+
+        throw new Error(errorMessage);
+      }
+
+      const parsed = fileUploadResponseSchema.safeParse(parsedBody);
+
+      if (!parsed.success) {
+        throw new Error("Unexpected upload response");
+      }
+
+      onFileSelect(parsed.data.url, parsed.data.fileName);
     } catch (error) {
       toast({
         title: "Upload failed",

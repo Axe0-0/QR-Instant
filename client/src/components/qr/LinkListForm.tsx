@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import LinkListInput, { type LinkItem } from "@/components/LinkListInput";
+import type { LinkListTheme } from "@shared/schema";
 
 interface LinkListFormProps {
   onChange: (content: string) => void;
@@ -8,6 +9,7 @@ interface LinkListFormProps {
 
 export default function LinkListForm({ onChange }: LinkListFormProps) {
   const [links, setLinks] = useState<LinkItem[]>([]);
+  const [theme, setTheme] = useState<LinkListTheme>("minimal");
 
   useEffect(() => {
     const formatted = links
@@ -27,7 +29,12 @@ export default function LinkListForm({ onChange }: LinkListFormProps) {
 
   return (
     <Card className="p-4 space-y-4">
-      <LinkListInput links={links} onChange={setLinks} />
+      <LinkListInput
+        links={links}
+        onChange={setLinks}
+        theme={theme}
+        onThemeChange={setTheme}
+      />
       <p className="text-xs text-muted-foreground">
         Each line becomes a separate entry in the QR code so viewers can pick the right link.
       </p>
