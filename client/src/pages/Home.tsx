@@ -6,6 +6,8 @@ import TextInput from "@/components/TextInput";
 import FileUploadInput from "@/components/FileUploadInput";
 import LinkListInput, { LinkItem } from "@/components/LinkListInput";
 import QRCodeDisplay from "@/components/QRCodeDisplay";
+import WifiForm from "@/components/qr/WifiForm";
+import VCardForm from "@/components/qr/VCardForm";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import type { LinkListTheme } from "@shared/schema";
@@ -19,6 +21,8 @@ export default function Home() {
   const [links, setLinks] = useState<LinkItem[]>([]);
   const [linkListTheme, setLinkListTheme] = useState<LinkListTheme>("minimal");
   const [linkListUrl, setLinkListUrl] = useState<string>();
+  const [wifiContent, setWifiContent] = useState("");
+  const [vcardContent, setVcardContent] = useState("");
   const [qrContent, setQrContent] = useState("");
   const { toast } = useToast();
 
@@ -42,10 +46,16 @@ export default function Home() {
       case "image":
         content = imageFile?.url ?? "";
         break;
+      case "wifi":
+        content = wifiContent;
+        break;
+      case "vcard":
+        content = vcardContent;
+        break;
     }
 
     setQrContent(content);
-  }, [activeType, urlValue, textValue, pdfFile, imageFile]);
+  }, [activeType, urlValue, textValue, pdfFile, imageFile, wifiContent, vcardContent]);
 
   useEffect(() => {
     if (activeType !== "links") {
@@ -140,6 +150,10 @@ export default function Home() {
                     selectedFile={imageFile?.name}
                   />
                 )}
+
+                {activeType === "wifi" && <WifiForm onChange={setWifiContent} />}
+
+                {activeType === "vcard" && <VCardForm onChange={setVcardContent} />}
 
                 {activeType === "links" && (
                   <LinkListInput

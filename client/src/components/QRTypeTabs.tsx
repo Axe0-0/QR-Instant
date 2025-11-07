@@ -2,7 +2,7 @@
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export type QRType = "url" | "text" | "pdf" | "image" | "links";
+export type QRType = "url" | "text" | "pdf" | "image" | "wifi" | "vcard" | "links";
 
 interface QRTypeTabsProps {
   activeType: QRType;
@@ -17,6 +17,8 @@ export default function QRTypeTabs({ activeType, onTypeChange }: QRTypeTabsProps
         <TabsTrigger value="text">Text</TabsTrigger>
         <TabsTrigger value="pdf">PDF</TabsTrigger>
         <TabsTrigger value="image">Image</TabsTrigger>
+        <TabsTrigger value="wifi">Wi-Fi</TabsTrigger>
+        <TabsTrigger value="vcard">vCard</TabsTrigger>
         <TabsTrigger value="links">Link List</TabsTrigger>
       </TabsList>
     </Tabs>

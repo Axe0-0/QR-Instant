@@ -28,7 +28,15 @@ export default function QRCodeDisplay({ content }: QRCodeDisplayProps) {
 
   // Render preview with the selected settings
   useEffect(() => {
-    if (!content || !canvasRef.current) return;
+    if (!canvasRef.current) return;
+
+    if (!content) {
+      const context = canvasRef.current.getContext("2d");
+      if (context) {
+        context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      }
+      return;
+    }
 
     QRCode.toCanvas(canvasRef.current, content, {
       width: Number(PREVIEW_SIZE),
@@ -88,10 +96,18 @@ export default function QRCodeDisplay({ content }: QRCodeDisplayProps) {
   };
 
   return (
-    <Card className="p-4">
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="flex items-center justify-center">
-          <canvas ref={canvasRef} width={Number(PREVIEW_SIZE)} height={Number(PREVIEW_SIZE)} />
+    <Card className="p-4 h-full">
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="flex items-center justify-center w-full">
+          <div className="w-full max-w-xs sm:max-w-sm md:max-w-full">
+            <canvas
+              ref={canvasRef}
+              width={Number(PREVIEW_SIZE)}
+              height={Number(PREVIEW_SIZE)}
+              className="w-full aspect-square rounded-lg border border-muted"
+              style={{ height: "auto" }}
+            />
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -133,14 +149,19 @@ export default function QRCodeDisplay({ content }: QRCodeDisplayProps) {
             </div>
           </div>
 
-          <div className="flex gap-3">
-            <Button className="flex-1" onClick={handleDownloadPng}>
+          <div className="flex flex-wrap gap-3">
+            <Button className="flex-1 min-w-[160px]" onClick={handleDownloadPng} disabled={!content}>
               <Download className="w-4 h-4 mr-2" /> Download PNG
             </Button>
-            <Button variant="secondary" onClick={handleDownloadSvg}>
+            <Button
+              variant="secondary"
+              onClick={handleDownloadSvg}
+              disabled={!content}
+              className="flex-1 min-w-[120px]"
+            >
               <Download className="w-4 h-4 mr-2" /> SVG
             </Button>
-            <Button variant="ghost" onClick={handleCopyPng}>
+            <Button variant="ghost" onClick={handleCopyPng} disabled={!content} className="flex-1 min-w-[56px]">
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             </Button>
           </div>
