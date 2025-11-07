@@ -10,6 +10,7 @@ import WifiForm from "@/components/qr/WifiForm";
 import VCardForm from "@/components/qr/VCardForm";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { linkListResponseSchema } from "@shared/schema";
 import type { LinkListTheme } from "@shared/schema";
 
 export default function Home() {
@@ -85,15 +86,36 @@ export default function Home() {
           }),
         });
 
-        if (!response.ok) {
-          const error = await response.json().catch(() => ({}));
-          throw new Error(error.error || "Failed to create link list");
+        const responseBody = await response.text();
+        let parsedBody: unknown;
+
+        if (responseBody) {
+          try {
+            parsedBody = JSON.parse(responseBody);
+          } catch (parseError) {
+            parsedBody = undefined;
+          }
         }
 
-        const data = await response.json();
+        if (!response.ok) {
+          const errorMessage =
+            typeof parsedBody === "object" && parsedBody !== null && "error" in parsedBody &&
+            typeof (parsedBody as { error?: unknown }).error === "string"
+              ? (parsedBody as { error: string }).error
+              : responseBody || "Failed to create link list";
+
+          throw new Error(errorMessage);
+        }
+
+        const parsedResponse = linkListResponseSchema.safeParse(parsedBody);
+
+        if (!parsedResponse.success) {
+          throw new Error("Unexpected link list response");
+        }
+
         if (!cancelled) {
-          setLinkListUrl(data.url);
-          setQrContent(data.url);
+          setLinkListUrl(parsedResponse.data.url);
+          setQrContent(parsedResponse.data.url);
         }
       } catch (error) {
         if (!cancelled) {
@@ -119,10 +141,10 @@ export default function Home() {
       <Header />
       
       <main className="flex-1 overflow-auto">
-        <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="max-w-6xl mx-auto px-6 py-8">
           <QRTypeTabs activeType={activeType} onTypeChange={setActiveType} />
-          
-          <div className="grid lg:grid-cols-2 gap-8 mt-8">
+
+          <div className="grid gap-8 mt-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,480px)]">
             <div>
               <Card className="p-6">
                 {activeType === "url" && (

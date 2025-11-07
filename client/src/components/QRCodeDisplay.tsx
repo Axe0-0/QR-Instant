@@ -71,6 +71,9 @@ export default function QRCodeDisplay({ content }: QRCodeDisplayProps) {
       errorCorrectionLevel: ecc,
       color: { dark, light },
     } as any);
+    if (typeof svg !== "string") {
+      throw new Error("Failed to generate SVG content");
+    }
     const blob = new Blob([svg], { type: "image/svg+xml" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -97,7 +100,7 @@ export default function QRCodeDisplay({ content }: QRCodeDisplayProps) {
 
   return (
     <Card className="p-4 h-full">
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="flex items-center justify-center w-full">
           <div className="w-full max-w-xs sm:max-w-sm md:max-w-full">
             <canvas
@@ -110,8 +113,8 @@ export default function QRCodeDisplay({ content }: QRCodeDisplayProps) {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-4 min-w-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label>Size</Label>
               <Select value={size} onValueChange={(v) => setSize(v as QRSize)}>
