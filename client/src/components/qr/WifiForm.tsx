@@ -50,7 +50,7 @@ export default function WifiForm({ onChange }: { onChange: (content: string) => 
         <div className="space-y-1">
           <Label>Security</Label>
           <Select value={enc} onValueChange={(v) => setEnc(v as WifiEncryption)}>
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
