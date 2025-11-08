@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { linkListResponseSchema } from "@shared/schema";
 import type { LinkListTheme } from "@shared/schema";
 import { buildApiUrl } from "@/lib/api";
+import AdSenseBanner from "@/components/AdSenseBanner";
 
 export default function Home() {
   const [activeType, setActiveType] = useState<QRType>("url");
@@ -89,30 +90,34 @@ export default function Home() {
 
         const contentType = response.headers.get("content-type") ?? "";
         const responseBody = await response.text();
+        const isJson = contentType.toLowerCase().includes("application/json");
         let parsedBody: unknown;
 
-        if (contentType.toLowerCase().includes("application/json")) {
-          if (responseBody) {
-            try {
-              parsedBody = JSON.parse(responseBody);
-            } catch (parseError) {
-              throw new Error("Received malformed JSON from the server");
-            }
+        if (isJson && responseBody) {
+          try {
+            parsedBody = JSON.parse(responseBody);
+          } catch (_error) {
+            throw new Error("Received malformed JSON from the server");
           }
-        } else {
-          throw new Error(
-            "Unexpected response from server. Please ensure the backend API is reachable.",
-          );
         }
 
         if (!response.ok) {
           const errorMessage =
-            typeof parsedBody === "object" && parsedBody !== null && "error" in parsedBody &&
+            isJson &&
+            typeof parsedBody === "object" &&
+            parsedBody !== null &&
+            "error" in parsedBody &&
             typeof (parsedBody as { error?: unknown }).error === "string"
               ? (parsedBody as { error: string }).error
-              : responseBody || "Failed to create link list";
+              : responseBody || `Failed to create link list (status ${response.status})`;
 
           throw new Error(errorMessage);
+        }
+
+        if (!isJson) {
+          throw new Error(
+            "Unexpected response from server. Please ensure the backend API is reachable.",
+          );
         }
 
         const parsedResponse = linkListResponseSchema.safeParse(parsedBody);
@@ -147,10 +152,16 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      
+
+      <div className="px-6 pt-4">
+        <AdSenseBanner className="mx-auto hidden max-w-4xl sm:block" />
+      </div>
+
       <main className="flex-1 overflow-auto">
         <div className="max-w-6xl mx-auto px-6 py-8">
           <QRTypeTabs activeType={activeType} onTypeChange={setActiveType} />
+
+          <AdSenseBanner className="mt-6 sm:hidden" />
 
           <div className="grid gap-8 mt-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,480px)]">
             <div>
@@ -197,8 +208,9 @@ export default function Home() {
               </Card>
             </div>
             
-            <div className="lg:sticky lg:top-8 lg:self-start">
+            <div className="lg:sticky lg:top-8 lg:self-start space-y-6">
               <QRCodeDisplay content={qrContent} />
+              <AdSenseBanner bordered={false} className="bg-muted/30 p-0" />
             </div>
           </div>
         </div>

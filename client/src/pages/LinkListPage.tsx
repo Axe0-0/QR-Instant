@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { Loader2, Link as LinkIcon, AlertTriangle } from "lucide-react";
 import type { LinkListTheme } from "@shared/schema";
+import AdSenseBanner from "@/components/AdSenseBanner";
 
 interface LinkListEntry {
   label: string;
@@ -115,7 +116,8 @@ export default function LinkListPage({ id }: LinkListPageProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
-      <div className="mx-auto w-full max-w-3xl px-6 py-12">
+      <div className="mx-auto w-full max-w-3xl px-6 py-12 space-y-8">
+        <AdSenseBanner className="mx-auto hidden max-w-2xl sm:block" />
         <div className="mb-10 text-center space-y-2">
           <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1 text-xs font-medium text-primary">
             <LinkIcon className="w-3.5 h-3.5" /> Curated Links
@@ -136,6 +138,7 @@ export default function LinkListPage({ id }: LinkListPageProps) {
             </a>
           ))}
         </div>
+        <AdSenseBanner className="mx-auto max-w-2xl" bordered={false} />
       </div>
     </div>
   );
