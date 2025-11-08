@@ -100,9 +100,9 @@ export default function QRCodeDisplay({ content }: QRCodeDisplayProps) {
 
   return (
     <Card className="p-4 h-full">
-      <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
-        <div className="flex items-center justify-center w-full xl:justify-start xl:flex-shrink-0">
-          <div className="w-full max-w-xs sm:max-w-sm md:max-w-md xl:w-80">
+      <div className="flex flex-col gap-6 items-stretch">
+        <div className="flex items-center justify-center w-full">
+          <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
             <canvas
               ref={canvasRef}
               width={Number(PREVIEW_SIZE)}
@@ -113,7 +113,7 @@ export default function QRCodeDisplay({ content }: QRCodeDisplayProps) {
           </div>
         </div>
 
-        <div className="space-y-4 min-w-0 xl:flex-1">
+        <div className="space-y-4 min-w-0 w-full">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label>Size</Label>
