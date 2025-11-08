@@ -2,8 +2,8 @@ import { QrCode } from "lucide-react";
 
 export default function Header() {
   return (
-    <header className="border-b h-16 flex items-center justify-center px-6">
-      <div className="flex items-center gap-3">
+    <header className="border-b">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-6">
         <QrCode className="w-6 h-6 text-primary" data-testid="icon-logo" />
         <div>
           <h1 className="text-xl font-semibold" data-testid="text-title">QR Code Generator</h1>
