@@ -36,30 +36,34 @@ export default function FileUploadInput({ fileType, onFileSelect, onClear, selec
 
       const contentType = response.headers.get("content-type") ?? "";
       const responseBody = await response.text();
+      const isJson = contentType.toLowerCase().includes("application/json");
       let parsedBody: unknown;
 
-      if (contentType.toLowerCase().includes("application/json")) {
-        if (responseBody) {
-          try {
-            parsedBody = JSON.parse(responseBody);
-          } catch (parseError) {
-            throw new Error("Received malformed JSON from the server");
-          }
+      if (isJson && responseBody) {
+        try {
+          parsedBody = JSON.parse(responseBody);
+        } catch (_error) {
+          throw new Error("Received malformed JSON from the server");
         }
-      } else {
-        throw new Error(
-          "Unexpected response from server. Please ensure the backend API is reachable.",
-        );
       }
 
       if (!response.ok) {
         const errorMessage =
-          typeof parsedBody === "object" && parsedBody !== null && "error" in parsedBody &&
+          isJson &&
+          typeof parsedBody === "object" &&
+          parsedBody !== null &&
+          "error" in parsedBody &&
           typeof (parsedBody as { error?: unknown }).error === "string"
             ? (parsedBody as { error: string }).error
-            : responseBody || "Upload failed";
+            : responseBody || `Upload failed (status ${response.status})`;
 
         throw new Error(errorMessage);
+      }
+
+      if (!isJson) {
+        throw new Error(
+          "Unexpected response from server. Please ensure the backend API is reachable.",
+        );
       }
 
       const parsed = fileUploadResponseSchema.safeParse(parsedBody);
